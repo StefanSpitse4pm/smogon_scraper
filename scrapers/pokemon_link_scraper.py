@@ -1,9 +1,23 @@
+import pandas as pd
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+
+URLS_TO_IGNORE = [
+    "/dex/rs/pokemon/",
+    "/dex/ss/pokemon/",
+    "/dex/sv/pokemon/",
+    "/dex/dp/pokemon/",
+    "/dex/bw/pokemon/",
+    "/dex/gs/pokemon/",
+    "/dex/xy/pokemon/",
+    "/dex/rb/pokemon/",
+    "/dex/sm/pokemon/",
+]
+
 
 chrome_options = Options()
 driver = webdriver.Chrome(options=chrome_options)
@@ -28,7 +42,8 @@ for button in button_element:
     button.click()
 
 
-def getDexLinks(relative_links: list):
+def get_pokemon_links(relative_links: list) -> set:
+    temp_pokemon = set()
     # Gets all the pokemon links.
     for link in relative_links:
         if "/dex/" and "/pokemon/" in link.get("href"):
@@ -40,7 +55,6 @@ def getDexLinks(relative_links: list):
                 EC.presence_of_element_located((By.CLASS_NAME, "DexContent"))
             )
 
-            temp_pokemon = []
             start_height = driver.execute_script("return window.scrollY;")
             while True:
                 # This code is here so beatifulsoup updates when the page is loaded
@@ -50,7 +64,7 @@ def getDexLinks(relative_links: list):
                 links = soup.select("a[href]")
                 for link in links:
                     if "/pokemon/" in link.get("href"):
-                        temp_pokemon.append(link.get("href"))
+                        temp_pokemon.add(link.get("href"))
                 WebDriverWait(driver, 60).until(
                     EC.presence_of_element_located(
                         (By.CLASS_NAME, "PokemonAltRow-name")
@@ -63,8 +77,11 @@ def getDexLinks(relative_links: list):
                     break
 
                 start_height = current_height
-    print(temp_pokemon)
+    return temp_pokemon
 
 
-links = [links[15]]
-getDexLinks(links)
+pokemon_links = get_pokemon_links(links)
+pokemon_link_df = pd.DataFrame(list(pokemon_links), columns=["links"])
+
+pokemon_link_df = pokemon_link_df[~pokemon_link_df["links"].isin(URLS_TO_IGNORE)]
+pokemon_link_df.to_json("data.json")
