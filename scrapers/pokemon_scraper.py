@@ -36,6 +36,18 @@ def get_pokemon_data(links):
         WebDriverWait(driver, 60).until(
             EC.presence_of_element_located((By.CLASS_NAME, "DexHeader "))
         )
+        button_elements = driver.find_elements(By.CLASS_NAME, "ExportButton")
+        for buttons in button_elements:
+            buttons.click()
+
+        page_source = driver.page_source
+        soup = BeautifulSoup(page_source, "html.parser")
+
+        set_divs = soup.select(".BlockMovesetInfo>div>textarea")
+        pokemon_move_sets = []
+        for div in set_divs:
+            pokemon_move_sets.append(div.decode_contents())
+        print(pokemon_move_sets)
 
 
 get_pokemon_data(links)

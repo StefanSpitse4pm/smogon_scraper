@@ -80,6 +80,7 @@ def get_pokemon_links(relative_links: list) -> set:
     return temp_pokemon
 
 
+links = [links[15]]
 pokemon_links = get_pokemon_links(links)
 pokemon_link_df = pd.DataFrame(list(pokemon_links), columns=["links"])
 
