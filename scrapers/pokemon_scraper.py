@@ -8,7 +8,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 df = pd.read_json("data.json")
 links = df.to_numpy()
-print(type(links))
 chrome_options = Options()
 driver = webdriver.Chrome(options=chrome_options)
 
@@ -31,10 +30,11 @@ for button in button_element:
 
 def get_pokemon_data(links):
     global driver
+    df = pd.DataFrame()
     for link in links:
         driver.get(f"{allowed_domain}{link[0]}")
         WebDriverWait(driver, 60).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "DexHeader "))
+            EC.presence_of_element_located((By.CLASS_NAME, "OtherGensList"))
         )
         button_elements = driver.find_elements(By.CLASS_NAME, "ExportButton")
         for buttons in button_elements:
@@ -44,10 +44,26 @@ def get_pokemon_data(links):
         soup = BeautifulSoup(page_source, "html.parser")
 
         set_divs = soup.select(".BlockMovesetInfo>div>textarea")
+        pkmn_format = soup.select_one(
+            ".PokemonPage-StrategySelector>ul>li>.is-selected"
+        )
+        if pkmn_format is not None:
+            pkmn_format = pkmn_format.decode_contents()
+        pkmn_gen = link[0].split("/")[2]
+        pokemon_name = soup.select_one("#PokemonPage-HeaderGrouper>div>h1")
         pokemon_move_sets = []
         for div in set_divs:
             pokemon_move_sets.append(div.decode_contents())
-        print(pokemon_move_sets)
+        output_dict = {
+            "pokemon": pokemon_name.decode_contents(),
+            "sets": pokemon_move_sets,
+            "format": pkmn_format,
+            "gen": pkmn_gen,
+        }
+
+        df = df._append(output_dict, ignore_index=True)
+    print(df)
+    df.to_json("please.json")
 
 
 get_pokemon_data(links)
