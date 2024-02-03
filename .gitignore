@@ -161,3 +161,4 @@ cython_debug/
 data.json
 smogon_scraper.code-workspace
 please.json
+test.json
