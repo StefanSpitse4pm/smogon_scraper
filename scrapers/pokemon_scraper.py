@@ -1,9 +1,9 @@
 import pandas as pd
+from selectolax.parser import HTMLParser
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selectolax.parser import HTMLParser
 
 df = pd.read_json("test.json")
 links = df.to_numpy()
@@ -39,10 +39,18 @@ def get_html(url):
     driver.quit()
     return html
 
-def parse_html(html):
+
+def parse_html(html, url):
     data = HTMLParser(html)
-    
-    data.css_first(".BlockMovesetInfo>div>textarea")
+    print(data)
+    format = data.css_first(".PokemonPage-StrategySelector ul li span.is-selected")
+    set = data.css_first(".BlockMovesetInfo div textarea")
+    return {
+        "pokemon": data.css_first("#PokemonPage-HeaderGrouper div h1").text(strip=True),
+        "set": set.text(strip=True) if set is not None else None,
+        "format": format.text(strip=True) if format is not None else None,
+        "gen": url.split("/")[2],
+    }
 
 
 def setup_driver(url):
@@ -58,4 +66,5 @@ def setup_driver(url):
 
 for url in links:
     print(url[0])
-    get_html(url[0])
+    html = get_html(url[0])
+    print(parse_html(html, url[0]))
