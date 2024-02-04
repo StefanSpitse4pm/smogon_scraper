@@ -1,10 +1,12 @@
+import concurrent.futures
+
 import pandas as pd
 from selectolax.parser import HTMLParser
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-import concurrent.futures
 
 df = pd.read_json("test_data.json")
 links = df.to_numpy()
@@ -15,11 +17,15 @@ def get_html(url):
     driver = setup_driver(url)
 
     # click the cookies button
-    WebDriverWait(driver, 60).until(
-        EC.presence_of_element_located(
-            (By.CSS_SELECTOR, "div>div>button:nth-of-type(2)")
+    try:
+        WebDriverWait(driver, 60).until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "div>div>button:nth-of-type(2)")
+            )
         )
-    )
+    except TimeoutException:
+        driver.refresh()
+
     button_element = driver.find_elements(
         By.CSS_SELECTOR, "div>div>button:nth-of-type(2)"
     )
@@ -27,9 +33,12 @@ def get_html(url):
         button.click()
 
     # Wait until the page is loaded.
-    WebDriverWait(driver, 60).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "DexHeader "))
-    )
+    try:
+        WebDriverWait(driver, 60).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "DexHeader "))
+        )
+    except TimeoutException:
+        driver.refresh()
 
     # Click all of the export buttons on the page to load the set data into the website.
     button_elements = driver.find_elements(By.CLASS_NAME, "ExportButton")
@@ -63,13 +72,14 @@ def setup_driver(url):
     driver.maximize_window()
     return driver
 
+
 urls = list(links.ravel())
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
     results = list(executor.map(get_html, urls))
 
 df = pd.DataFrame()
-print(results[0][0])
+
 for res in results:
     df = df._append(parse_html(res[0], res[1]), ignore_index=True)
 df.to_json("please.json")
