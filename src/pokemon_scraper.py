@@ -4,8 +4,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+import concurrent.futures
 
-df = pd.read_json("test.json")
+df = pd.read_json("test_data.json")
 links = df.to_numpy()
 full_url = "https://www.smogon.com"
 
@@ -37,12 +38,11 @@ def get_html(url):
 
     html = driver.page_source
     driver.quit()
-    return html
+    return html, url
 
 
 def parse_html(html, url):
     data = HTMLParser(html)
-    print(data)
     format = data.css_first(".PokemonPage-StrategySelector ul li span.is-selected")
     set = data.css_first(".BlockMovesetInfo div textarea")
     return {
@@ -63,8 +63,13 @@ def setup_driver(url):
     driver.maximize_window()
     return driver
 
+urls = list(links.ravel())
 
-for url in links:
-    print(url[0])
-    html = get_html(url[0])
-    print(parse_html(html, url[0]))
+with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+    results = list(executor.map(get_html, urls))
+
+df = pd.DataFrame()
+print(results[0][0])
+for res in results:
+    df = df._append(parse_html(res[0], res[1]), ignore_index=True)
+df.to_json("please.json")
