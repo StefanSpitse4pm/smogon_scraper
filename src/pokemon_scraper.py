@@ -1,12 +1,14 @@
 import concurrent.futures
 
 import pandas as pd
+from config.settings import Settings
 from selectolax.parser import HTMLParser
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from sqlalchemy import create_engine
 
 df = pd.read_json("test_data.json")
 links = df.to_numpy()
@@ -55,8 +57,10 @@ def parse_html(html, url):
     format = data.css_first(".PokemonPage-StrategySelector ul li span.is-selected")
     set = data.css_first(".BlockMovesetInfo div textarea")
     return {
-        "pokemon": data.css_first("#PokemonPage-HeaderGrouper div h1").text(strip=True),
-        "set": set.text(strip=True) if set is not None else None,
+        "pokemon_name": data.css_first("#PokemonPage-HeaderGrouper div h1").text(
+            strip=True
+        ),
+        "pokemon_set": set.text(strip=True) if set is not None else None,
         "format": format.text(strip=True) if format is not None else None,
         "gen": url.split("/")[2],
     }
@@ -82,4 +86,6 @@ df = pd.DataFrame()
 
 for res in results:
     df = df._append(parse_html(res[0], res[1]), ignore_index=True)
-df.to_json("please.json")
+
+engine = create_engine(Settings.DB_URI)
+df.to_sql(name="pokemon", con=engine, if_exists="append", index=False)

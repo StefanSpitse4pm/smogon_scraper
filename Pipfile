@@ -9,6 +9,9 @@ selenium = "*"
 pandas = "*"
 pyarrow = "*"
 selectolax = "*"
+sqlalchemy = "*"
+pymysql = "*"
+cryptography = "*"
 
 [dev-packages]
 
