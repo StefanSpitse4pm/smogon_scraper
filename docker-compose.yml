@@ -1,4 +1,3 @@
-version: "3"
 services:
   chrome:
     image: selenium/node-chrome:4.17.0-20240123
@@ -10,7 +9,7 @@ services:
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
       - SE_NODE_MAX_SESSIONS=12
-      
+
   selenium-hub:
     image: selenium/hub:4.17.0-20240123
     container_name: selenium-hub
@@ -18,3 +17,26 @@ services:
       - "4442:4442"
       - "4443:4443"
       - "4444:4444"
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: smogon-scraper
+      MYSQL_USER: stefan
+      MYSQL_PASSWORD: change_me
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: stefan
+      PMA_PASSWORD: change_me
+      MYSQL_ROOT_PASSWORD: root_password
+
