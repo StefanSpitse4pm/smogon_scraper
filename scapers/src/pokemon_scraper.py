@@ -16,7 +16,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy import create_engine
 
 start_time = time.time()
-df = pd.read_json("test_data.json")
+df = pd.read_json("..//test_data.json")
 links = df.to_numpy()
 full_url = "https://www.smogon.com"
 
@@ -76,9 +76,8 @@ def click_button(driver, button):
                 EC.presence_of_element_located(
                     (By.CSS_SELECTOR, "div>div>button:nth-of-type(2)")
                 )
-            )    
+            )
             button.click()
-
 
 
 def parse_html(html, url):
