@@ -12,6 +12,8 @@ selectolax = "*"
 sqlalchemy = "*"
 pymysql = "*"
 cryptography = "*"
+fastapi = "*"
+pydantic = "*"
 
 [dev-packages]
 
