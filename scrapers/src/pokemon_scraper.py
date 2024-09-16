@@ -83,7 +83,7 @@ def click_button(driver, button):
 def parse_html(html, url):
     data = HTMLParser(html)
     format = data.css_first(".PokemonPage-StrategySelector ul li span.is-selected")
-    set = data.css_first(".BlockMovesetInfo div textarea")
+    set = data.css(".BlockMovesetInfo div textarea")
     name = data.css_first("#PokemonPage-HeaderGrouper div h1")
     return {
         "pokemon_name": (
