@@ -12,6 +12,7 @@ selectolax = "*"
 sqlalchemy = "*"
 pymysql = "*"
 cryptography = "*"
+pokebase = "*"
 
 [dev-packages]
 
