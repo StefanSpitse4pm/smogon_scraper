@@ -16,7 +16,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy import create_engine
 
 start_time = time.time()
-df = pd.read_json("..//test_data.json")
+df = pd.read_json("c:\\Users\\Stefa\\Documents\\Programmeren\\Persoonlijke projecten\\smogon_scraper\\test_data.json")
 links = df.to_numpy()
 full_url = "https://www.smogon.com"
 
@@ -83,7 +83,7 @@ def click_button(driver, button):
 def parse_html(html, url):
     data = HTMLParser(html)
     format = data.css_first(".PokemonPage-StrategySelector ul li span.is-selected")
-    set = data.css(".BlockMovesetInfo div textarea")
+    set = data.css_first(".BlockMovesetInfo div textarea")
     name = data.css_first("#PokemonPage-HeaderGrouper div h1")
     return {
         "pokemon_name": (
@@ -99,8 +99,10 @@ def parse_html(html, url):
 
 def setup_driver(url):
     options = webdriver.ChromeOptions()
+    options.add_argument("--disable-search-engine-choice-screen")
     options.add_argument("--headless")
     driver = webdriver.Remote(command_executor="http://localhost:4444", options=options)
+    # driver = webdriver.Chrome(options=options)
     driver.get(f"{full_url}{url}")
     driver.maximize_window()
     return driver

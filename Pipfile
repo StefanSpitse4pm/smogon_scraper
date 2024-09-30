@@ -13,6 +13,7 @@ sqlalchemy = "*"
 pymysql = "*"
 cryptography = "*"
 pokebase = "*"
+pydantic = "*"
 
 [dev-packages]
 
